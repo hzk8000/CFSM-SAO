@@ -779,6 +779,8 @@ export interface PublicConfig {
   version: string;
   latestVersion: string;
   private_site: boolean;
+  /** `/api/config.authorization`：当前请求是否已通过后端认证（含 Cloudflare Access）。 */
+  authorization: boolean;
   turnstile_enabled: boolean;
   turnstile_site_key: string;
   verified: boolean;

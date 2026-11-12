@@ -34,10 +34,11 @@ export function AppShell() {
     normalizedPath === "/assets" ||
     normalizedPath.startsWith("/server/") ||
     normalizedPath.startsWith("/instance/");
+  const isAuthorized = publicConfig.data?.authorization === true;
   const isCheckingAccess =
     isDataRoute &&
     (publicConfig.isPending ||
-      (publicConfig.data?.private_site === true && auth.isPending));
+      (publicConfig.data?.private_site === true && !isAuthorized && auth.isPending));
   const isMockError =
     new URLSearchParams(search).get("mock_error") === "1" ||
     new URLSearchParams(search).get("mock-error") === "1" ||
@@ -49,8 +50,8 @@ export function AppShell() {
   const isPrivateVisitor =
     isDataRoute &&
     publicConfig.data?.private_site === true &&
-    !auth.isPending &&
-    auth.data?.logged_in !== true;
+    !isAuthorized &&
+    (auth.isPending || auth.data?.logged_in !== true);
   const awaitingVerification = isDataRoute && needsVerification;
   const isThemeManage =
     new URLSearchParams(search).get("view") === "theme-manage" ||

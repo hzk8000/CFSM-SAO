@@ -158,6 +158,7 @@ describe("getPublic", () => {
 
     expect(config.sitename).toBe("My Monitor");
     expect(config.private_site).toBe(true);
+    expect(config.authorization).toBe(true);
     expect(config.theme_settings).toEqual({ showConnections: false });
     expect(config.sys.long_history_points).toBe(180);
   });
@@ -261,11 +262,32 @@ describe("getPublic", () => {
 });
 
 describe("getMe", () => {
-  it("reports a logged-out visitor without hitting the network", async () => {
+  it("reports a logged-out visitor when the backend denies authorization", async () => {
+    fetchMock.mockImplementation(
+      jsonReply({ authorization: false, auth_mode: "password", site_title: "S" }),
+    );
+
     const me = await getMe();
 
     expect(me.logged_in).toBe(false);
-    expect(fetchMock).not.toHaveBeenCalled();
+    expect(me.username).toBe("");
+    expect(fetchMock).toHaveBeenCalledOnce();
+  });
+
+  it("trusts authorization from Cloudflare Access without a panel JWT", async () => {
+    fetchMock.mockImplementation(
+      jsonReply({
+        authorization: true,
+        auth_mode: "cloudflare-access",
+        site_title: "S",
+      }),
+    );
+
+    const me = await getMe();
+
+    expect(me).toEqual({ logged_in: true, username: "Admin", uuid: "" });
+    const [, init] = fetchMock.mock.calls[0]!;
+    expect((init.headers as Record<string, string>).Authorization).toBeUndefined();
   });
 
   it("derives the login state and custom nickname from storage and config", async () => {

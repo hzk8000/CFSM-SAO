@@ -175,6 +175,7 @@ export async function getPublic(options?: RequestOptions): Promise<PublicConfig>
     version: config.version,
     latestVersion: config.last_workers_version,
     private_site: !config.is_public,
+    authorization: config.authorization,
     turnstile_enabled: config.turnstile_enabled,
     turnstile_site_key: config.turnstile_site_key,
     verified: config.verified,
@@ -261,9 +262,6 @@ export function getInitialAuth(): Me {
  */
 export async function getMe(options?: RequestOptions): Promise<Me> {
   const token = getJwtToken();
-  if (!token) {
-    return { logged_in: false, username: "", uuid: "" };
-  }
   const config = await getSiteConfig(options);
   if (!config.authorization) {
     return { logged_in: false, username: "", uuid: "" };
